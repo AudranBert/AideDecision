@@ -33,9 +33,9 @@ def electre(
     dataset,
     feat_mul,
     feat_weights,
-    pref_func,
-    match_thresh,
-    veto_threshs
+    pref_func=electre_binary_step,
+    match_thresh=0,
+    veto_threshs=None
 ):
     x_norm = dataset * feat_mul
 
@@ -44,7 +44,11 @@ def electre(
     score_table = np.zeros((num_items, num_items))
 
     # given [i][j], is i NOT vetoed by j?
-    non_veto_table = np.zeros((num_items, num_items), dtype=np.bool_)
+    non_veto_table = (
+        np.zeros((num_items, num_items), dtype=np.bool_)
+        if veto_threshs is not None
+        else None
+    )
 
     for i, j in yield_pairs(num_items):
         diff = x_norm[j] - x_norm[i]
@@ -53,19 +57,20 @@ def electre(
         weights = stepped * feat_weights
         score_table[i][j] = weights.sum()
 
-        j_vetoes_i = diff >= veto_threshs
-        non_veto_table[j][i] = not np.any(j_vetoes_i)
+        if veto_threshs is not None:
+            j_vetoes_i = diff >= veto_threshs
+            non_veto_table[j][i] = not np.any(j_vetoes_i)
 
         # print(f"Test veto A{j+1} -> A{i+1}: {diff}, {diff < veto_threshs}")
 
-    for test_thresh in np.arange(0.5, 1.0, 0.02):
-        kernel = []
+    # for test_thresh in np.arange(0.5, 1.0, 0.02):
+    #     kernel = []
 
-        for i, j in yield_pairs(num_items):
-            if score_table[i][j] >= test_thresh and non_veto_table[i][j]:
-                kernel.append((i, j))
+    #     for i, j in yield_pairs(num_items):
+    #         if score_table[i][j] >= test_thresh and non_veto_table[i][j]:
+    #             kernel.append((i, j))
         
-        print(f"s={test_thresh:.2f}: {', '.join(f'A{i+1}<-A{j+1}' for i, j in kernel)}")
+    #     print(f"s={test_thresh:.2f}: {', '.join(f'A{i+1}<-A{j+1}' for i, j in kernel)}")
 
     kernel = []
 
@@ -76,8 +81,13 @@ def electre(
         g.node(str(i), f"A{i+1}")
 
     for i, j in yield_pairs(num_items):
-        if score_table[i][j] >= match_thresh and non_veto_table[i][j]:
-            kernel.append((j, i))
-            g.edge(str(j), str(i), label=f"{score_table[i][j]:.2f}")
+        if veto_threshs is not None and not non_veto_table[i][j]:
+            continue
+
+        if score_table[i][j] < match_thresh:
+            continue
+
+        kernel.append((j, i))
+        g.edge(str(j), str(i), label=f"{score_table[i][j]:.2f}")
     
     return ElectreResults(kernel, score_table, non_veto_table, g)
