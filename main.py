@@ -23,6 +23,6 @@ def print_dict(vote_results):
         print(i,":", vote_results[i])
 
 if __name__ == "__main__":
-    voters = load_csv("data/profil1.csv")   
-    result = vote.two_turn_vote(voters)
+    voters = load_csv("data/social/profil1.csv")   
+    result = vote.coombs(voters)
     print_result(result)

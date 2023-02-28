@@ -63,12 +63,13 @@ def borda(voters):
     return order_results(results)
 
 def coombs(voters):
+    steps ={}
     eliminated = []
     candidates_number = len(voters[0])
     for i in range(candidates_number-1):
         result = get_votes_distribution(voters, eliminated=eliminated)
-        if absolute_majority(result): return result
+        steps[f"turn_{i}"] = order_results(result)
+        if absolute_majority(result): return steps
         hated = get_votes_distribution(voters, eliminated=eliminated, reverse=True)
         most_hated = np.argmax(hated) + 1
-        eliminated.append(most_hated) 
-    return result
+        eliminated.append(most_hated)
