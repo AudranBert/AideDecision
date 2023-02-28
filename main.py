@@ -12,6 +12,6 @@ def load_csv(filename):
     return votes
 
 if __name__ == "__main__":
-    voters = load_csv("profil1.csv")   
-    result = vote.get_votes_distribution(voters)
+    voters = load_csv("data/profil1.csv")   
+    result = vote.two_turn_vote(voters)
     print(result)
