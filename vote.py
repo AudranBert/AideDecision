@@ -1,17 +1,15 @@
 import numpy as np
 
-def get_votes_distribution(voters, elimineted=[], reverse=False):
+def get_votes_distribution(voters, eliminated=[], reverse=False):
     candidates_number = len(voters[0])
     rank = 0 if not reverse else candidates_number-1
     distribution = [0 for i in range(candidates_number)]
     for pref in voters:
         current_choice = rank
-        while pref[current_choice] in elimineted:
+        while pref[current_choice] in eliminated:
             current_choice = current_choice + 1 if not reverse else current_choice - 1
         distribution[pref[current_choice] - 1] += 1
     return distribution
-
-
 
 def order_results(vote_distribution_results):
     results = []
@@ -24,7 +22,12 @@ def order_results(vote_distribution_results):
         reverse=True
     )
 
-
+def absolute_majority(result):
+    total_voters = 0
+    for votes in result:
+        total_voters += votes
+    majority = max(result)
+    return majority / total_voters > 0.5
 
 def one_turn_vote(voters):
     return order_results(get_votes_distribution(voters))
@@ -58,3 +61,14 @@ def borda(voters):
             results[voters[j][i]-1] += score
         score-=1
     return order_results(results)
+
+def coombs(voters):
+    eliminated = []
+    candidates_number = len(voters[0])
+    for i in range(candidates_number-1):
+        result = get_votes_distribution(voters, eliminated=eliminated)
+        if absolute_majority(result): return result
+        hated = get_votes_distribution(voters, eliminated=eliminated, reverse=True)
+        most_hated = np.argmax(hated) + 1
+        eliminated.append(most_hated) 
+    return result
