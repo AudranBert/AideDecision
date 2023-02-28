@@ -48,3 +48,13 @@ def alternative_vote(voters):
         results[f'turn_{i}']=turn
         # print(eliminated)
     return results
+
+def borda(voters):
+    candidates_number = len(voters[0])
+    results = [0 for i in range(candidates_number)]
+    score = candidates_number-1
+    for i in range(candidates_number-1):
+        for j in range(len(voters)):
+            results[voters[j][i]-1] += score
+        score-=1
+    return order_results(results)
