@@ -73,3 +73,63 @@ def coombs(voters):
         hated = get_votes_distribution(voters, eliminated=eliminated, reverse=True)
         most_hated = np.argmax(hated) + 1
         eliminated.append(most_hated)
+
+
+LETTER_TO_NUMBER = {
+    "A": 1,
+    "B": 2,
+    "C": 3,
+    "D": 4,
+    "E": 5,
+    "F": 6,
+    "G": 7,
+    "H": 8,
+    "I": 9,
+}
+
+from typing import List, Dict, Tuple, Union, FrozenSet
+
+def letters_to_vote(letters: List[tuple]):
+    """_summary_
+    Args:
+        dict_letters (dict): format {[A,B,D]: 3, ...}
+    """
+    new_list = []
+    for i in letters:
+        order = [LETTER_TO_NUMBER[x] for x in i[0]]
+        for j in range(i[1]):
+            new_list.append(order)
+    # print(new_list)
+    return new_list
+            
+
+
+schulze_test_data = [
+    [list("ACBED"), 5],
+    [list("ADECB"), 5],
+    [list("BEDAC"), 8],
+    [list("CABED"), 3],
+    [list("CAEBD"), 7],
+    [list("CBADE"), 2],
+    [list("DCEBA"), 7],
+    [list("EBADC"), 8],
+]
+
+def schulze(voters):
+    p = [[0 for i in range(len(voters[0]))] for j in range(len(voters[0]))]
+    for i in range(len(voters[0])):
+        for j in range(len(voters[0])):
+            if i != j :
+                if voters[i][j] > voters[j][i]:
+                    p[i][j] = voters[i][j]
+                else:
+                    p[i][j] = 0
+
+    for i in range(len(voters[0])):
+        for j in range(len(voters[0])):
+            if i != j :
+                for k in range(len(voters[0])):
+                    if i != k and j != k:
+                        p[j][k] = max (p[j][k], min (p[j][i], p[i][k]))
+    print(p)
+    return
