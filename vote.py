@@ -30,27 +30,53 @@ def absolute_majority(result):
     return majority / total_voters > 0.5
 
 def one_turn_vote(voters):
-    return order_results(get_votes_distribution(voters))
+    result = order_results(get_votes_distribution(voters))
+    print(f"Le gagnant du vote au premier tour est {result[0][0]}")
+    return result
 
 def two_turn_vote(voters, candidates_number=2):
+    nb_cand = len(voters[0])
     results = dict()
     turn_1 = one_turn_vote(voters)
     results[f'turn_1'] = turn_1
-    eliminated = [x[0]-1 for i, x in enumerate(turn_1) if i>=candidates_number-1]
-    results[f'turn_2'] =  order_results(get_votes_distribution(voters, eliminated))
+    eliminated = {i for i in range(1, nb_cand+1)}
+    eliminated -= {turn_1[0][0], turn_1[1][0]}
+    turn_2 =  order_results(get_votes_distribution(voters, eliminated))
+    results[f'turn_2'] = turn_2
+    print(f"Le deuxième qualifié au second tour est {turn_1[1][0]}")
+    print(f"Le gagnant du vote au second tour est {turn_2[0][0]}")
     return results
-
 
 def alternative_vote(voters):
     results = {}
-    number_of_candidates = len(voters[0])
+    majority = False
+    nb_cand = len(voters[0])
     eliminated = []
-    for i in range(number_of_candidates):
+    for i in range(nb_cand-1):
         turn = order_results(get_votes_distribution(voters, eliminated))
+        if turn[0][1] > len(voters) / 2 and not majority: 
+            print(f"Majorité absolue pour {turn[0][0]}")
+            majority = True
         eliminated.append(turn[-1][0])
         results[f'turn_{i}']=turn
-        # print(eliminated)
+        print(f"Le candidat éliminé au tour {i} est {turn[-1][0]}")
+    print(f"Le gagnant du vote alternatif est {turn[0][0]}")
     return results
+
+def condorcet(voters):
+    nb_cand = len(voters[0])
+    votes = [[0 for i in range(nb_cand)] for j in range(nb_cand)]
+    wins = [0 for i in range(nb_cand)]
+    for i in range(nb_cand):
+        for j in range(i+1, nb_cand):
+            skipped = {k+1 for k in range(nb_cand)}
+            skipped -= {i+1, j+1}
+            duel = get_votes_distribution(voters, list(skipped))
+            votes[i][j] = duel[i]
+            votes[j][i] = duel[j]
+            if duel[i] > duel[j]: wins[i] += 1
+            else: wins[j] += 1
+    return order_results(wins), votes
 
 def borda(voters):
     candidates_number = len(voters[0])
