@@ -144,7 +144,19 @@ schulze_test_data = [
 def schulze(voters):
     # distance matrix between voters
     _, d = condorcet(voters)
-    return strongest_path_strengths(d, len(voters[0]))
+    strongest_paths = strongest_path_strengths(d, len(voters[0]))
+
+    duels = [0 for i in range(len(voters[0]))]
+    for i in range(len(voters[0])):
+        for j in range(len(voters[0])):
+            if i != j :
+                if strongest_paths[i][j] > strongest_paths[j][i]:
+                    duels[i] += 1
+    r = [(i+1, x) for i, x in enumerate(duels)]
+    r = sorted(r, key=lambda x: x[1], reverse=True)
+    for i, x in enumerate(r):
+        suffix = "er" if i==0 else "eme"
+        print(f"Candidat {x[0]} est {i+1}{suffix} et a gagné {x[1]} duels")
 
 def strongest_path_strengths(d, c):
     p = [[0 for i in range(c)] for j in range(c)]
@@ -156,16 +168,11 @@ def strongest_path_strengths(d, c):
                 else:
                     p[i][j] = 0
     for i in range(c):
-        print(p[i])
-    print("")
-    for i in range(c):
         for j in range(c):
             if i != j :
                 for k in range(c):
                     if i != k and j != k:
                         p[j][k] = max (p[j][k], min (p[j][i], p[i][k]))
-    for i in range(c):
-        print(p[i])
-    return
+    return p
 
 
