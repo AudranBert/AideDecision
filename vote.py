@@ -74,8 +74,9 @@ def alternative_vote(voters):
     print(f"Le gagnant du vote alternatif est {turn[0][0]}")
     return results
 
-def condorcet(voters):
-    print("Méthode Condorcet")
+def condorcet(voters, verbose=True):
+    if verbose:
+        print("Méthode Condorcet")
     nb_cand = len(voters[0])
     votes = [[0 for i in range(nb_cand)] for j in range(nb_cand)]
     wins = [0 for i in range(nb_cand)]
@@ -155,22 +156,51 @@ schulze_test_data = [
     [list("EBADC"), 8],
 ]
 
+
+def copeland(voters):
+    print("Méthode Copeland")
+    _, duels = condorcet(voters, False)
+    duel_winners = [0 for i in range(len(voters[0]))]
+    for i in range(len(voters[0])):
+        for j in range(len(voters[0])):
+            if i != j :
+                if duels[i][j] > duels[j][i]:
+                    duel_winners[i] += 1
+                elif duels[i][j] < duels[j][i]:
+                    duel_winners[i] -= 1
+    r = [(i+1, x) for i, x in enumerate(duel_winners)]
+    r = sorted(r, key=lambda x: x[1], reverse=True)
+    pos = 0
+    for i, x in enumerate(r):
+        if i==0 or x[1] != r[i-1][1]:
+            pos = i+1
+        suffix = "er" if pos==1 else "eme"
+        print(f"Candidat {x[0]} est {pos}{suffix} et a un score de {x[1]}")
+
 def schulze(voters):
+    print("Méthode Schulze")
     # distance matrix between voters
-    _, d = condorcet(voters)
+    _, d = condorcet(voters, False)
+    
     strongest_paths = strongest_path_strengths(d, len(voters[0]))
 
-    duels = [0 for i in range(len(voters[0]))]
+    duel_winners = [0 for i in range(len(voters[0]))]
     for i in range(len(voters[0])):
         for j in range(len(voters[0])):
             if i != j :
                 if strongest_paths[i][j] > strongest_paths[j][i]:
-                    duels[i] += 1
-    r = [(i+1, x) for i, x in enumerate(duels)]
+                    duel_winners[i] += 1
+
+    r = [(i+1, x) for i, x in enumerate(duel_winners)]
     r = sorted(r, key=lambda x: x[1], reverse=True)
+    pos = 0
     for i, x in enumerate(r):
-        suffix = "er" if i==0 else "eme"
-        print(f"Candidat {x[0]} est {i+1}{suffix} et a gagné {x[1]} duels")
+        if i==0 or x[1] != r[i-1][1]:
+            pos = i+1
+        suffix = "er" if pos==1 else "eme"
+        print(f"Candidat {x[0]} est {pos}{suffix} et a gagné {x[1]} duels")
+        
+
 
 def strongest_path_strengths(d, c):
     p = [[0 for i in range(c)] for j in range(c)]

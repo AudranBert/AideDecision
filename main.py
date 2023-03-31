@@ -1,9 +1,6 @@
 import csv
 import vote
 
-
-
-
 def load_csv(filename):
     with open(filename, "r") as file:
         csv_reader = csv.reader(file)
@@ -64,3 +61,7 @@ if __name__ == "__main__":
     print()
     winners = vote.borda(voters)
     print_condat(winners)
+    print()
+    vote.copeland(voters)
+    print()
+    vote.schulze(voters)
