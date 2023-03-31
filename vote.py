@@ -22,6 +22,16 @@ def order_results(vote_distribution_results):
         reverse=True
     )
 
+def order_condorcet(vote_distribution_results):
+    results = []
+    for i, votes in enumerate(vote_distribution_results):
+        results.append((i+1, votes))
+    return sorted(
+        results, 
+        key=lambda x: x[1],
+        reverse=True
+    )
+
 def absolute_majority(result):
     total_voters = 0
     for votes in result:
@@ -48,6 +58,7 @@ def two_turn_vote(voters, candidates_number=2):
     return results
 
 def alternative_vote(voters):
+    print("Vote alternatif :")
     results = {}
     majority = False
     nb_cand = len(voters[0])
@@ -64,6 +75,7 @@ def alternative_vote(voters):
     return results
 
 def condorcet(voters):
+    print("Méthode Condorcet")
     nb_cand = len(voters[0])
     votes = [[0 for i in range(nb_cand)] for j in range(nb_cand)]
     wins = [0 for i in range(nb_cand)]
@@ -76,9 +88,10 @@ def condorcet(voters):
             votes[j][i] = duel[j]
             if duel[i] > duel[j]: wins[i] += 1
             else: wins[j] += 1
-    return order_results(wins), votes
+    return order_condorcet(wins), votes
 
 def borda(voters):
+    print("Méthode Borda")
     candidates_number = len(voters[0])
     results = [0 for i in range(candidates_number)]
     score = candidates_number-1
@@ -89,16 +102,17 @@ def borda(voters):
     return order_results(results)
 
 def coombs(voters):
+    print("Méthode Coombs")
     steps ={}
     eliminated = []
     candidates_number = len(voters[0])
     for i in range(candidates_number-1):
         result = get_votes_distribution(voters, eliminated=eliminated)
-        steps[f"turn_{i}"] = order_results(result)
         if absolute_majority(result): return steps
         hated = get_votes_distribution(voters, eliminated=eliminated, reverse=True)
         most_hated = np.argmax(hated) + 1
         eliminated.append(most_hated)
+        steps[f"turn_{i}"] = order_results(hated)
 
 
 LETTER_TO_NUMBER = {
@@ -174,5 +188,3 @@ def strongest_path_strengths(d, c):
                     if i != k and j != k:
                         p[j][k] = max (p[j][k], min (p[j][i], p[i][k]))
     return p
-
-
