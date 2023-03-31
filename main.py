@@ -46,7 +46,10 @@ def print_coombs(dico):
     print(f"Le gagnant du vote Coombs est {turn[-1][0]}")
 
 if __name__ == "__main__":
-    voters = load_csv("data/social/profil1.csv")   
+    # voters = load_csv("data/social/profil1.csv")   
+    voters = vote.td_test_data
+    voters = vote.letters_to_vote(voters)
+
     print()
     vote.one_turn_vote(voters)
     print()

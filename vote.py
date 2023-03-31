@@ -39,15 +39,18 @@ def absolute_majority(result):
     majority = max(result)
     return majority / total_voters > 0.5
 
-def one_turn_vote(voters):
+def one_turn_vote(voters, verbose=True):
+    if verbose:
+        print("Vote à 1 tour :")
     result = order_results(get_votes_distribution(voters))
     print(f"Le gagnant du vote au premier tour est {result[0][0]}")
     return result
 
 def two_turn_vote(voters, candidates_number=2):
+    print("Vote à 2 tours :")
     nb_cand = len(voters[0])
     results = dict()
-    turn_1 = one_turn_vote(voters)
+    turn_1 = one_turn_vote(voters, False)
     results[f'turn_1'] = turn_1
     eliminated = {i for i in range(1, nb_cand+1)}
     eliminated -= {turn_1[0][0], turn_1[1][0]}
@@ -156,6 +159,14 @@ schulze_test_data = [
     [list("EBADC"), 8],
 ]
 
+td_test_data = [
+    [list("ABCDE"), 33],
+    [list("BDCEA"), 16],
+    [list("CDBAE"), 3],
+    [list("CEBDA"), 8],
+    [list("DECBA"), 18],
+    [list("ECBDA"), 22],
+]
 
 def copeland(voters):
     print("Méthode Copeland")
