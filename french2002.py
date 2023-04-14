@@ -94,10 +94,6 @@ class VotingInfo:
         return ", ".join(self.candidate_names[i] for i in candidate_ids)
 
 
-    def format_profile(self, pref, nonpref, count):
-        return f"{count}: + {self.format_candidate_ids(pref)}"
-
-
 def pref_frequencies(info: VotingInfo):
     in_pref = defaultdict(int)
 
