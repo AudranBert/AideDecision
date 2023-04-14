@@ -1,3 +1,4 @@
+from collections import defaultdict
 from dataclasses import dataclass
 import numpy as np
 import graphviz as gv
@@ -63,31 +64,43 @@ def electre(
 
         # print(f"Test veto A{j+1} -> A{i+1}: {diff}, {diff < veto_threshs}")
 
-    # for test_thresh in np.arange(0.5, 1.0, 0.02):
-    #     kernel = []
+    in_kernel_freqs = defaultdict(int)
 
-    #     for i, j in yield_pairs(num_items):
-    #         if score_table[i][j] >= test_thresh and non_veto_table[i][j]:
-    #             kernel.append((i, j))
-        
-    #     print(f"s={test_thresh:.2f}: {', '.join(f'A{i+1}<-A{j+1}' for i, j in kernel)}")
+    for test_thresh in np.arange(0.5, 1.02, 0.02):
+        dominators = set()
+        blacklist = set()
 
-    kernel = []
+        for i, j in yield_pairs(num_items):
+            if score_table[i][j] >= test_thresh and (not non_veto_table or non_veto_table[i][j]):
+                dominators.add(j)
+                blacklist.add(i)
 
-    # build graph
-    g = gv.Digraph()
+        kernel = dominators - blacklist
 
-    for i in range(num_items):
-        g.node(str(i), f"A{i+1}")
+        for i in kernel:
+            in_kernel_freqs[i] += 1
 
-    for i, j in yield_pairs(num_items):
-        if veto_threshs is not None and not non_veto_table[i][j]:
-            continue
+        print(f"s={test_thresh:.2f}: {', '.join(f'A{i}' for i in kernel)}")
 
-        if score_table[i][j] < match_thresh:
-            continue
+    for i, freq in sorted(in_kernel_freqs.items(), key=lambda x: -x[1]):
+        print(f"A{i} > ", end="")
 
-        kernel.append((j, i))
-        g.edge(str(j), str(i), label=f"{score_table[i][j]:.2f}")
+    graph_edges = []
+
+    # # build graph
+    # g = gv.Digraph()
+
+    # for i in range(num_items):
+    #     g.node(str(i), f"A{i+1}")
+
+    # for i, j in yield_pairs(num_items):
+    #     if veto_threshs is not None and not non_veto_table[i][j]:
+    #         continue
+
+    #     if score_table[i][j] < match_thresh:
+    #         continue
+
+    #     graph_edges.append((j, i))
+    #     g.edge(str(j), str(i), label=f"{score_table[i][j]:.2f}")
     
-    return ElectreResults(kernel, score_table, non_veto_table, g)
+    return ElectreResults(graph_edges, score_table, non_veto_table, None)
